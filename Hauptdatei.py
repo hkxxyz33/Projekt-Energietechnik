@@ -1,4 +1,6 @@
 import pandapower as pp
+import numpy as np
+
 
 
 
@@ -6,9 +8,9 @@ def initialisieren():
     netzwerktemp = pp.create_empty_network('mainnetzwerk', 50)
 
     # Bus 1, 2 und 3 erstellen mit Knoten Umspannwerk als Slack-Knoten
-    b1 = pp.create_bus(netzwerktemp, 110, 'bus_Umspannwerk')
-    b2 = pp.create_bus(netzwerktemp, 110, 'bus_Windextgrid')
-    b3 = pp.create_bus(netzwerktemp, 110, 'bus_Stadtlast')
+    b1 = pp.create_bus(netzwerktemp, 110, 'bus_Umspannwerk', geodata= (0, 0))
+    b2 = pp.create_bus(netzwerktemp, 110, 'bus_Windextgrid', geodata=(10, 0))
+    b3 = pp.create_bus(netzwerktemp, 110, 'bus_Stadtlast' , geodata=(20, 0))
 
     # slack Knoten, sowie Last und Scheinleistungsgenerator anlegen
     pp.create_ext_grid(netzwerktemp, b1, 1.0, 0)
@@ -48,12 +50,35 @@ def initialisieren():
 
 def lastfluss(netz):
     pp.runpp(netz)
+    #Spannung an den Busschienen
     print(netz.res_bus.vm_pu)
+    print()
+    print(netz.res_line.loading_percent)
+    print()
+    print(netz.res_line.pl_mw)
 
+def netzplot(netz):
+    #ausgelagert, falls Bedarf an weiteren Parametern besteht
+    pp.plotting.simple_plot(
+        netz,
+        respect_switches=False,
+        line_width=15,         # Kabeldicke
+        bus_size=8,          # Bus-Kreise deutlich größer als die Kabel
+        ext_grid_size=8,     # Quadrat des Slack-Netzes groß darstellen
+        plot_loads=True,        # Last-Dreieck aktivieren
+        load_size=8,         # Größe des Last-Dreiecks
+        plot_sgens=True,        # Erzeuger-Symbol (Windpark) aktivieren
+        sgen_size=8,   # Größe des Erzeuger-Symbols
+        bus_color="darkblue",
+        line_color="grey",
+        show_plot=True,
+
+    )
 
 def main():
     netzwerk = initialisieren()
     lastfluss(netzwerk)
+    netzplot(netzwerk)
 
 
 main()
